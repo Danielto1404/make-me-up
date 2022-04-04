@@ -1,0 +1,13 @@
+models:
+  device: cpu
+  clip: ViT-B/32
+  stylegan: static/sg3-make-faces.pkl
+
+firebase:
+  key-path: .firebase-pk.json
+  storage-bucket: make-me-up-3cb4f.appspot.com
+  users-bucket: make-me-up-3cb4f.appspot.com/users
+
+
+
+

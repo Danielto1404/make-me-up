@@ -24,9 +24,10 @@ class CLIPTrainer:
         Loads stylegan generator, and find's std weights vector.
         :return: Std weights
         """
-
+        print(f'Finding std weights')
         zs = torch.randn([5000, G.mapping.z_dim], device=device)
         w_stds = G.mapping(zs, None).std(0)
+        print(f'Found std weights')
         return w_stds
 
     def _initial_search(
@@ -103,14 +104,14 @@ class CLIPTrainer:
 
             loop.set_postfix(loss=loss.item(), q_magnitude=q.std().item())
 
-            q_ema = q_ema * 0.95 + q * 0.05
+            q_ema = q_ema * 0.9 + q * 0.1
 
+            image = G.synthesis(q_ema * w_stds + G.mapping.w_avg, noise_mode='const')
+            pil_image = TF.to_pil_image(image[0].add(1).div(2).clamp(0, 1))
+            os.makedirs(f'samples/', exist_ok=True)
+            pil_image.save(f'samples/{i}-latent.jpg')
+            
             yield i
-
-        image = G.synthesis(q_ema * w_stds + G.mapping.w_avg, noise_mode='const')
-        pil_image = TF.to_pil_image(image[0].add(1).div(2).clamp(0, 1))
-        os.makedirs(f'samples/', exist_ok=True)
-        pil_image.save(f'samples/latent.jpg')
 
         return q_ema
 

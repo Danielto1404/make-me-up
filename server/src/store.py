@@ -1,7 +1,7 @@
 import pickle
 import sys
 
-from models import CLIPTrainer, CLIP
+from src.models import CLIPTrainer, CLIP
 from utils import read_config
 
 sys.path.append("./models")

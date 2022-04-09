@@ -11,12 +11,12 @@ from ..api.model import GenerateMakeRequestParams
 
 
 class CLIPTrainer:
-    def __init__(self, G: any, clip_model: CLIP, device: str):
+    def __init__(self, G: any, clip_model: CLIP, w_stds: torch.Tensor, device: str):
         self.G = G
         self.clip_model = clip_model
         self.device = device
         self.cutouts = MakeCutouts(224, 32, 0.5)
-        self.w_stds = CLIPTrainer._find_weights_std(G=G, device=device)
+        self.w_stds = w_stds # CLIPTrainer._find_weights_std(G=G, device=device)
 
     @staticmethod
     def _find_weights_std(G: any, device) -> Tuple[torch.nn.Module, torch.Tensor]:

@@ -2,6 +2,7 @@ models:
   device: cuda
   clip: ViT-B/32
   stylegan: static/sg3-make-faces.pkl
+  wstds: static/w_stds.pth
 
 firebase:
   key-path: .firebase-pk.json

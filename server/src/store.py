@@ -1,13 +1,15 @@
 import pickle
 import sys
+import torch
 
-from models import CLIPTrainer, CLIP
+from src.models import CLIPTrainer, CLIP
 from utils import read_config
 
 sys.path.append("./models")
 
 config = read_config()
 device = config["models"]["device"]
+wstds = torch.load(config["models"]["wstds"]).to(device)
 
 try:
     with open(config["models"]["stylegan"], "rb") as fp:
@@ -18,4 +20,4 @@ except Exception as e:
 
 clip = CLIP(model_name=config["models"]["clip"], device=device)
 
-trainer = CLIPTrainer(G=G, clip_model=clip, device=device)
+trainer = CLIPTrainer(G=G, clip_model=clip, w_stds=wstds, device=device)

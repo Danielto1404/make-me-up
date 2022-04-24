@@ -2,12 +2,12 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-# import networks
+from .make_options import MakeOptions
 from .networks import init_net, E_makeup, E_content, E_semantic, Transformer, Decoder
 
 
 class MakeupGAN(nn.Module):
-    def __init__(self, opts):
+    def __init__(self, device, opts=MakeOptions()):
         super(MakeupGAN, self).__init__()
         self.opts = opts
 
@@ -15,7 +15,7 @@ class MakeupGAN(nn.Module):
         self.lr = opts.lr
         self.batch_size = opts.batch_size
 
-        self.device = torch.device(opts.device)
+        self.device = torch.device(device)
         self.input_dim = opts.input_dim
         self.output_dim = opts.output_dim
         self.semantic_dim = opts.semantic_dim
@@ -138,7 +138,7 @@ class MakeupGAN(nn.Module):
         images_makeup = self.normalize_image(self.makeup).detach()
         images_z_transfer = self.normalize_image(self.z_transfer).detach()
 
-        row1 = torch.cat(
+        row = torch.cat(
             tensors=[
                 images_non_makeup[0:1, ::],
                 images_makeup[0:1, ::],
@@ -149,4 +149,4 @@ class MakeupGAN(nn.Module):
             ],
             dim=3
         )
-        return row1, images_z_transfer[0:1, ::]
+        return row, images_z_transfer[0:1, ::]

@@ -3,9 +3,11 @@ from typing import Tuple, List
 
 import torch
 import torchvision.transforms.functional as TF
+from PIL import Image
 from tqdm import tqdm
 
-from .utils import embed_image, prompts_dist_loss, spherical_dist_loss, MakeCutouts
+from .losses import prompts_dist_loss, spherical_dist_loss
+from .utils import embed_image, MakeCutouts
 from ..clip import CLIP
 
 
@@ -121,7 +123,7 @@ class CLIPTrainer:
             iterations: int = 1,
             batch_size: int = 1,
             truncation_psi: float = 0.75
-    ):
+    ) -> Image:
         targets = [self.clip_model.embed_text(text) for text in prompts]
 
         initial = self._initial_search(
@@ -133,4 +135,9 @@ class CLIPTrainer:
 
         latent = self._optimize(initial, targets, iterations=iterations)
 
-        return latent
+        image = self.G.synthesis(latent * self.w_stds + self.G.mapping.w_avg, noise_mode='const') \
+            .detach() \
+            .cpu() \
+            .numpy()
+
+        return Image.fromarray(image)

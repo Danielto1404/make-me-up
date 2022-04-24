@@ -37,7 +37,7 @@ class FaceParser:
         return net
 
     @torch.no_grad()
-    def evaluate(self, image: Image, resize=(512, 512)) -> np.ndarray:
+    def evaluate(self, image: Image, resize=(512, 512)) -> Image:
         image = image.resize(resize, Resampling.BILINEAR)
         image = self.to_tensor(image)
         image = torch.unsqueeze(image, 0)
@@ -51,6 +51,6 @@ class FaceParser:
             .argmax(0) \
             .astype(np.int8)
 
-        return parsing
+        return Image.fromarray(parsing)
 
     __call__ = evaluate

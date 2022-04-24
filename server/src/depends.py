@@ -1,5 +1,4 @@
 import pickle
-import sys
 from typing import Optional
 
 import torch
@@ -8,14 +7,12 @@ from config import read_config
 from src.clip import CLIP
 from src.clip_trainer.train import CLIPTrainer
 from src.faceparsing import FaceParser
-
-# Stylegan dependencies
-sys.path.append('../src/stylegan')
+from src.ssat import MakeupGAN
 
 _face_parser: Optional[FaceParser] = None
 _clip_model: Optional[CLIP] = None
 _gan_model = None
-_ssat_model = None
+_ssat_model: Optional[MakeupGAN] = None
 _clip_trainer: Optional[CLIPTrainer] = None
 
 _config = read_config()
@@ -54,6 +51,17 @@ def get_gan_model() -> torch.nn:
             _gan_model = state['G_ema'].to(_config['models']['device'])
 
     return _gan_model
+
+
+def get_ssat_model() -> MakeupGAN:
+    global _ssat_model
+
+    if _ssat_model is None:
+        _ssat_model = MakeupGAN(device=_config['models']['device'])
+        _ssat_model.resume(_config['models']['ssat'], train=False)
+        _ssat_model.eval()
+
+    return _ssat_model
 
 
 def get_clip_trainer() -> CLIPTrainer:

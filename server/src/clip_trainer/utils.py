@@ -1,29 +1,6 @@
 import torch
 import torch.nn.functional as F
-import torchvision.transforms
 from einops import rearrange
-
-
-def generate_image(G, latent=None, class_label=None, device='cpu'):
-    if latent is None:
-        latent = torch.randn([1, G.z_dim]).to(device)
-
-    img = G(latent, class_label)
-    return img
-
-
-def spherical_dist_loss(x, y):
-    x = F.normalize(x, dim=-1)
-    y = F.normalize(y, dim=-1)
-    return (x - y).norm(dim=-1).div(2).arcsin().pow(2).mul(2)
-
-
-def prompts_dist_loss(x, targets, loss):
-    # Keeps consistent results vs previous method for single objective guidance
-    if len(targets) == 1:
-        return loss(x, targets[0])
-    distances = [loss(x, target) for target in targets]
-    return torch.stack(distances, dim=-1).sum(dim=-1)
 
 
 class MakeCutouts(torch.nn.Module):
@@ -53,9 +30,3 @@ def embed_image(cutouts, clip, image):
     embeds = clip.embed_cutout(cutouts)
     embeds = rearrange(embeds, '(cc n) c -> cc n c', n=n)
     return embeds
-
-
-imagenet_normalize = torchvision.transforms.Normalize(
-    mean=[0.48145466, 0.4578275, 0.40821073],
-    std=[0.26862954, 0.26130258, 0.27577711]
-)

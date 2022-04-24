@@ -1,10 +1,13 @@
-import firebase_admin
+import sys
+
+import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from firebase_admin import credentials
 
 from src.api import api
-from src.store import config
+
+# Stylegan dependencies
+sys.path.append('src/stylegan')
 
 app = FastAPI()
 app.include_router(router=api)
@@ -22,10 +25,5 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-key_path = config["firebase"]["key-path"]
-storage_bucket = config["firebase"]["storage-bucket"]
-
-cred = credentials.Certificate(key_path)
-firebase = firebase_admin.initialize_app(cred, {
-    "storageBucket": storage_bucket
-})
+if __name__ == '__main__':
+    uvicorn.run("main:app", reload=True)

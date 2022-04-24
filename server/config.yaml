@@ -1,8 +1,10 @@
 models:
-  device: cuda
+  device: cpu
   clip: ViT-B/32
-  stylegan: static/sg3-make-faces.pkl
-  wstds: static/w_stds.pth
+  stylegan: static/SG3.pkl
+  wstds: static/W_STDS.pth
+  ssat: static/SSAT.pth
+  faceparsing: static/PARSING.pth
 
 firebase:
   key-path: .firebase-pk.json

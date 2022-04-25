@@ -3,7 +3,7 @@ import {FormProvider, useForm} from "react-hook-form";
 import {GenerateFormProps} from "../../../types";
 import PromptsInput from "./PromptsInput";
 import UploadUserImage from "./UploadUserImage";
-import axios from "axios";
+import axios, {AxiosRequestConfig, AxiosResponse} from "axios";
 
 const GenerateForm: React.FC = () => {
 
@@ -41,14 +41,14 @@ const GenerateForm: React.FC = () => {
             // return;
         }
 
+        console.log(file)
 
-        // console.log(Blob.)
 
         const formData = new FormData()
-        formData.append("file", file)
+        formData.append("img", file.name)
 
         axios({
-            url: "http://localhost:8000/api/v1/me/upload",
+            url: "http://localhost:8000/api/v1/transfer",
             method: "POST",
             data: formData,
             headers: {

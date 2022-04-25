@@ -1,14 +1,10 @@
 models:
-  device: cuda
+  device: cpu
   clip: ViT-B/32
-  stylegan: static/sg3-make-faces.pkl
-  wstds: static/w_stds.pth
-
-firebase:
-  key-path: .firebase-pk.json
-  storage-bucket: make-me-up-3cb4f.appspot.com
-  users-bucket: make-me-up-3cb4f.appspot.com/users
-
+  stylegan: models/SG3.pkl
+  wstds: models/W_STDS.pth
+  ssat: models/SSAT.pth
+  faceparsing: models/PARSING.pth
 
 
 

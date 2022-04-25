@@ -1,0 +1,10 @@
+models:
+  device: cpu
+  clip: ViT-B/32
+  stylegan: models/SG3.pkl
+  wstds: models/W_STDS.pth
+  ssat: models/SSAT.pth
+  faceparsing: models/PARSING.pth
+
+
+

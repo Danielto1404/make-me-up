@@ -53,9 +53,6 @@ scipy==1.7.3
 six==1.16.0
 sniffio==1.2.0
 starlette==0.17.1
-# torch==1.8.0+cu113
-# torchaudio==0.11.0+cu113
-# torchvision==0.12.0+cu113
 tqdm==4.63.1
 typing_extensions==4.1.1
 uritemplate==4.1.1
@@ -66,3 +63,5 @@ watchgod==0.8.2
 wcwidth==0.2.5
 websockets==10.2
 opencv-python~=4.5.5.64
+torch~=1.11.0
+torchvision~=0.12.0

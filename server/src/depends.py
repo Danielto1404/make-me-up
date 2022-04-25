@@ -71,7 +71,7 @@ def get_clip_trainer() -> CLIPTrainer:
         _clip_trainer = CLIPTrainer(
             G=get_gan_model(),
             clip_model=get_clip_model(),
-            w_stds=torch.load(_config['models']['wstds']),
+            w_stds=torch.load(_config['models']['wstds']).to(_config['models']['device']),
             device=_config['models']['device']
         )
 

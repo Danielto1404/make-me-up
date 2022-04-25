@@ -5,6 +5,3 @@ models:
   wstds: models/W_STDS.pth
   ssat: models/SSAT.pth
   faceparsing: models/PARSING.pth
-
-
-

@@ -22,6 +22,7 @@ def get_face_parser() -> FaceParser:
     global _face_parser
 
     if _face_parser is None:
+        print("loading face parser model...")
         _face_parser = FaceParser(
             model_path=_config['models']['faceparsing'],
             device=_config['models']['device']
@@ -34,6 +35,7 @@ def get_clip_model() -> CLIP:
     global _clip_model
 
     if _clip_model is None:
+        print("loading clip model...")
         _clip_model = CLIP(
             model_name=_config['models']['clip'],
             device=_config['models']['device']
@@ -47,6 +49,7 @@ def get_gan_model() -> torch.nn:
 
     if _gan_model is None:
         with open(_config['models']['stylegan'], 'rb') as fp:
+            print("loading stylegan model...")
             state = pickle.load(fp)
             _gan_model = state['G_ema'].to(_config['models']['device'])
 
@@ -57,6 +60,7 @@ def get_ssat_model() -> MakeupGAN:
     global _ssat_model
 
     if _ssat_model is None:
+        print("loading ssat model..")
         _ssat_model = MakeupGAN(device=_config['models']['device'])
         _ssat_model.resume(_config['models']['ssat'], train=False)
         _ssat_model.eval()
@@ -68,6 +72,7 @@ def get_clip_trainer() -> CLIPTrainer:
     global _clip_trainer
 
     if _clip_trainer is None:
+        print("loading clip trainer model...")
         _clip_trainer = CLIPTrainer(
             G=get_gan_model(),
             clip_model=get_clip_model(),

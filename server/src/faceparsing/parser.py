@@ -27,7 +27,7 @@ class FaceParser:
         ])
 
     @staticmethod
-    def setup_model(n_classes, model_path, map_location=None):
+    def setup_model(n_classes, model_path, map_location=None) -> BiSeNet:
         state = torch.load(model_path, map_location=map_location)
 
         net = BiSeNet(n_classes=n_classes)

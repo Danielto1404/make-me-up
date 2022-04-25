@@ -21,12 +21,12 @@ class MakeupGAN(nn.Module):
         self.semantic_dim = opts.semantic_dim
 
         # encoders
-        self.enc_content = init_net(E_content(opts.input_dim), opts.device, init_type='normal', gain=0.02)
-        self.enc_makeup = init_net(E_makeup(opts.input_dim), opts.device, init_type='normal', gain=0.02)
-        self.enc_semantic = init_net(E_semantic(opts.semantic_dim), opts.device, init_type='normal', gain=0.02)
-        self.transformer = init_net(Transformer(), opts.device, init_type='normal', gain=0.02)
+        self.enc_content = init_net(E_content(opts.input_dim), self.device, init_type='normal', gain=0.02)
+        self.enc_makeup = init_net(E_makeup(opts.input_dim), self.device, init_type='normal', gain=0.02)
+        self.enc_semantic = init_net(E_semantic(opts.semantic_dim), self.device, init_type='normal', gain=0.02)
+        self.transformer = init_net(Transformer(), self.device, init_type='normal', gain=0.02)
         # generator
-        self.gen = init_net(Decoder(opts.output_dim), opts.device, init_type='normal', gain=0.02)
+        self.gen = init_net(Decoder(opts.output_dim), self.device, init_type='normal', gain=0.02)
 
     def forward(self):
         # first clip_trainer and removal
@@ -121,32 +121,7 @@ class MakeupGAN(nn.Module):
             # makeup clip_trainer and removal
             self.z_transfer = self.gen(self.z_non_makeup_c, self.z_makeup_a_warp)
             self.z_removal = self.gen(self.z_makeup_c, self.z_non_makeup_a_warp)
-
-        non_makeup_down = self.normalize_image(F.interpolate(self.non_makeup, scale_factor=0.25, mode='nearest'))
-        n, c, h, w = non_makeup_down.shape
-        non_makeup_down_warp = torch.bmm(non_makeup_down.view(n, c, h * w), self.mapY)  # n * H * W * 1
-        non_makeup_down_warp = non_makeup_down_warp.view(n, c, h, w)
-        F.interpolate(non_makeup_down_warp, scale_factor=4)
-
-        makeup_down = self.normalize_image(F.interpolate(self.makeup, scale_factor=0.25, mode='nearest'))
-        n, c, h, w = makeup_down.shape
-        makeup_down_warp = torch.bmm(makeup_down.view(n, c, h * w), self.mapX)  # n * H * W * 1
-        makeup_down_warp = makeup_down_warp.view(n, c, h, w)
-        makeup_warp = F.interpolate(makeup_down_warp, scale_factor=4)
-
-        images_non_makeup = self.normalize_image(self.non_makeup).detach()
-        images_makeup = self.normalize_image(self.makeup).detach()
+            
         images_z_transfer = self.normalize_image(self.z_transfer).detach()
 
-        row = torch.cat(
-            tensors=[
-                images_non_makeup[0:1, ::],
-                images_makeup[0:1, ::],
-                # makeup_down_warp[0:1, ::],
-                # makeup_down[0:1, ::],
-                makeup_warp[0:1, ::],
-                images_z_transfer[0:1, ::]
-            ],
-            dim=3
-        )
-        return row, images_z_transfer[0:1, ::]
+        return images_z_transfer[0:1, ::]

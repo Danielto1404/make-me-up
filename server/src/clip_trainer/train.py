@@ -5,6 +5,7 @@ import torch
 import torchvision.transforms.functional as TF
 from PIL import Image
 from tqdm import tqdm
+from random import randint
 
 from .losses import prompts_dist_loss, spherical_dist_loss
 from .utils import embed_image, MakeCutouts
@@ -105,14 +106,12 @@ class CLIPTrainer:
 
             loop.set_postfix(loss=loss.item(), q_magnitude=q.std().item())
 
-            q_ema = q_ema * 0.9 + q * 0.1
+            q_ema = q_ema * 0.95 + q * 0.05
 
             image = G.synthesis(q_ema * w_stds + G.mapping.w_avg, noise_mode='const')
             pil_image = TF.to_pil_image(image[0].add(1).div(2).clamp(0, 1))
             os.makedirs(f'samples/', exist_ok=True)
             pil_image.save(f'samples/{i}-latent.jpg')
-
-            yield i
 
         return q_ema
 
@@ -130,14 +129,20 @@ class CLIPTrainer:
             targets,
             iterations=initial_iterations,
             batch_size=batch_size,
-            truncation_psi=truncation_psi
+            truncation_psi=truncation_psi,
+            seed=randint(0, 1_000_000)
         )
+        
+        torch.cuda.empty_cache()
 
         latent = self._optimize(initial, targets, iterations=iterations)
+        
+        torch.cuda.empty_cache()
 
-        image = self.G.synthesis(latent * self.w_stds + self.G.mapping.w_avg, noise_mode='const') \
-            .detach() \
-            .cpu() \
-            .numpy()
-
-        return Image.fromarray(image)
+        image = self.G.synthesis(latent * self.w_stds + self.G.mapping.w_avg, noise_mode='const')
+        
+        torch.cuda.empty_cache()
+        
+        pil_image = TF.to_pil_image(image[0].add(1).div(2).clamp(0, 1))
+        
+        return pil_image

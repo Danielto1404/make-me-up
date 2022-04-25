@@ -268,17 +268,24 @@ class SymmetryAttention(nn.Module):
 
         # warp the exemplar features b, taking softmax along the b dimension
         energy_ab_T = torch.bmm(fb.transpose(-2, -1), fa) * alpha
+        torch.cuda.empty_cache()
         corr_ab_T = F.softmax(energy_ab_T, dim=2)  # n*HW*C @ n*C*HW -> n*HW*HW
+        torch.cuda.empty_cache()
         # print(softmax_weights.shape, b_raw.shape)
         b_warp = torch.bmm(b_raw.view(n, raw_c, h * w), corr_ab_T)  # n*HW*1
+        torch.cuda.empty_cache()
         b_warp = b_warp.view(n, raw_c, h, w)
-
+        torch.cuda.empty_cache()
         energy_ba_T = torch.bmm(fa.transpose(-2, -1), fb) * alpha
+        torch.cuda.empty_cache()
         corr_ba_T = F.softmax(energy_ba_T, dim=2)  # n*HW*C @ n*C*HW -> n*HW*HW
+        torch.cuda.empty_cache()
         # print(corr_ab_T.shape)
         # print(softmax_weights.shape, b_raw.shape)
         a_warp = torch.bmm(a_raw.view(n, raw_c, h * w), corr_ba_T)  # n*HW*1
+        torch.cuda.empty_cache()
         a_warp = a_warp.view(n, raw_c, h, w)
+        torch.cuda.empty_cache()
         return corr_ab_T, corr_ba_T, a_warp, b_warp
 
     def forward(self, fa, fb, a_raw, b_raw):

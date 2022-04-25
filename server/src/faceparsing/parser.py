@@ -1,8 +1,7 @@
-import numpy as np
+import cv2
 import torch
 import torchvision.transforms as transforms
 from PIL import Image
-from PIL.Image import Resampling
 
 from .model import BiSeNet
 
@@ -37,20 +36,15 @@ class FaceParser:
         return net
 
     @torch.no_grad()
-    def evaluate(self, image: Image, resize=(512, 512)) -> Image:
-        image = image.resize(resize, Resampling.BILINEAR)
-        image = self.to_tensor(image)
-        image = torch.unsqueeze(image, 0)
-        image = image.to(self.device)
+    def evaluate(self, image: Image, path: str):
+        image = image.resize((512, 512), Image.BILINEAR)
+        img = self.to_tensor(image)
+        img = torch.unsqueeze(img, 0)
+        img = img.to(self.device)
+        out = self.net(img)[0]
 
-        out = self.net(image)[0]
-        parsing = out \
-            .squeeze(0) \
-            .cpu() \
-            .numpy() \
-            .argmax(0) \
-            .astype(np.int8)
+        parsing = out.squeeze(0).cpu().numpy().argmax(0)
 
-        return Image.fromarray(parsing)
+        cv2.imwrite(path, parsing)
 
     __call__ = evaluate

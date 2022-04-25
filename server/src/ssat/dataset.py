@@ -59,8 +59,8 @@ class MakeupDataset(torch_data_utils.Dataset):
             makeup_img,
             non_makeup_parse,
             makeup_parse,
-            resize_size=512,
-            crop_size=512
+            resize_size=286,
+            crop_size=256
     ):
         non_makeup_img = cv2.resize(non_makeup_img, (resize_size, resize_size))
         makeup_img = cv2.resize(makeup_img, (resize_size, resize_size))

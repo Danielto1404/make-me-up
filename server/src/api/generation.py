@@ -21,7 +21,7 @@ router = APIRouter(prefix="/transfer")
 async def transfer(
         file: UploadFile = File(...),
         prompts: str = Form(...),
-        params: GenerateMakeRequestParams = Depends(),
+        # params: GenerateMakeRequestParams = Depends(),
         clip_trainer: CLIPTrainer = Depends(get_clip_trainer),
         ssat: MakeupGAN = Depends(get_ssat_model),
         parser: FaceParser = Depends(get_face_parser)
@@ -34,11 +34,11 @@ async def transfer(
             raise HTTPException(status_code=404, detail="Given too much prompts. Maximum amount of prompt is 3")
 
         target = clip_trainer.train(
-            prompts=params.prompts[0].split(','),
-            initial_iterations=params.initial_iterations,
-            iterations=params.iterations,
-            truncation_psi=params.truncation_psi,
-            batch_size=params.batch_size
+            prompts=target_prompts,
+            initial_iterations=2,
+            iterations=32,
+            truncation_psi=0.75,
+            batch_size=4
         )
 
         torch.cuda.empty_cache()
@@ -60,5 +60,6 @@ async def transfer(
 
         return FileResponse(path='./save/generated.png', media_type='image/png')
 
-    except Exception:
+    except Exception as e:
+        print(e)
         raise HTTPException(status_code=404, detail="Invalid params")

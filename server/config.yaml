@@ -5,3 +5,5 @@ models:
   wstds: models/W_STDS.pth
   ssat: models/SSAT.pth
   faceparsing: models/PARSING.pth
+  detector: models/FACE_DETECTOR.dat
+  predictor: models/FACE_PREDICTOR_68.dat

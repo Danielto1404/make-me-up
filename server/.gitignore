@@ -1,3 +1,4 @@
 *.pkl
 *.pth
 *.firebase-pk.json
+*.dat

@@ -60,7 +60,7 @@ const GenerateForm: React.FC = () => {
         upload(file, prompts.map(p => p.prompt).join("|"))
             .then(response => new Blob([response.data]))
             .then(blob => setGeneratedSrc(URL.createObjectURL(blob)))
-            .catch(e => console.error(e))
+            .catch(e => alert(e))
             .finally(() => setIsUploading(false))
 
     }), [methods])
@@ -105,7 +105,11 @@ const GenerateForm: React.FC = () => {
                                                hover:bg-green-100
                                                hover:shadow-neon
                                                px-8 py-2 font-semibold text-md"
-                                    onClick={() => saveAs(generatedSrc, "generated.png")}
+                                    onClick={() => {
+                                        saveAs(generatedSrc, "generated.png")
+                                        methods.resetField("media")
+                                        methods.resetField("prompts")
+                                    }}
                                 >
                                     Save photo
                                 </button>

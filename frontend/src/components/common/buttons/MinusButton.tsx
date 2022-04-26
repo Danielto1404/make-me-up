@@ -11,7 +11,7 @@ const MinusButton: React.FC<MinusButtonProps> = ({
     size
 }) => {
     return (
-        <button className="p-3 rounded-lg w-full aspect-w-1 aspect-h-1
+        <button className="p-3 rounded-lg w-full h-[45px] w-[45px]
                            h-full ring-[1px] ring-gray-300 bg-white hover:shadow-neon
                            flex items-center justify-center"
                 type="button"

@@ -33,8 +33,8 @@ const BaseInput = React.forwardRef<HTMLInputElement, BaseInputProps>(
                     {children}
                 </div>
                 {error &&
-                    <div className="text-red-500 text-[13px] mt-3 ml-1 inline-flex gap-2 items-center">
-                        <BiErrorCircle className="fill-red-500" size={18}/>
+                    <div className="text-gray-200 text-[13px] mt-3 ml-1 inline-flex gap-2 items-center">
+                        <BiErrorCircle className="fill-gray-200" size={18}/>
                         {error}
                     </div>
                 }

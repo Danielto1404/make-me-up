@@ -1,5 +1,5 @@
 import React, {memo, useCallback} from 'react';
-import {useFormContext} from "react-hook-form";
+import {set, useFormContext} from "react-hook-form";
 import UploadImage from "./image/UploadImage";
 import {MediaInput} from "../../../types";
 import InputLabel from "./InputLabel";
@@ -9,6 +9,7 @@ const UploadUserImage: React.FC = () => {
     const {register, formState, resetField, watch, setValue} = useFormContext<{ media: MediaInput }>()
 
     const reset = useCallback(() => {
+        resetField("media")
         resetField("media")
     }, [resetField])
 
@@ -25,11 +26,10 @@ const UploadUserImage: React.FC = () => {
                          reset={reset}
                          error={formState?.errors?.media?.file?.message}
                          imageInputProps={
-                             register("media.file", {
+                             register("media", {
                                  onChange: event => {
                                      const file = event.target.files[0]
-                                     // console.log(file)
-                                     // setValue("media.file", file)
+                                     setValue("media.file", file)
                                      setValue("media.url", URL.createObjectURL(file))
                                  }
                              })

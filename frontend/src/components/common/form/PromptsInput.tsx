@@ -18,13 +18,14 @@ const PromptsInput = () => {
     return (
         <div>
             <InputLabel label="Text criteria"
-                        description="You can add text prompt related to make which you want to fit. Maximum 5 criteria."
+                        description="You can add text prompt related to make which you want to fit. Maximum 3 criteria."
             />
             {fields.map((field, index) =>
                 <div key={field.id}
-                     className="grid grid-cols-[45px_1fr] items-center gap-4 my-3">
+                     className="grid grid-cols-[45px_1fr] items-start gap-4 my-3">
                     <MinusButton onClick={() => remove(index)}/>
                     <BaseInput placeholder="red lips"
+                               error={formState?.errors?.prompts?.[index].prompt?.message}
                                {...control.register(`prompts.${index}.prompt`, {
                                    maxLength: {
                                        value: 20,
@@ -34,7 +35,7 @@ const PromptsInput = () => {
                     />
                 </div>
             )}
-            {fields.length < 5
+            {fields.length < 3
                 &&
                 <div className="w-[45px] h-[45px]">
                     <PlusButton onClick={() => append({prompt: ""})}/>

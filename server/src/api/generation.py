@@ -1,12 +1,8 @@
-import time
-from typing import List
-
 import torch
 import torchvision
 from fastapi import APIRouter, UploadFile, Depends, File, Form, HTTPException
-from starlette.responses import FileResponse, Response
+from starlette.responses import FileResponse
 
-from .dto import GenerateMakeRequestParams
 from .save_images import resize_source, resize_target
 from .utils import load_image_into_pil
 from ..clip_trainer import CLIPTrainer
@@ -21,7 +17,6 @@ router = APIRouter(prefix="/transfer")
 async def transfer(
         file: UploadFile = File(...),
         prompts: str = Form(...),
-        # params: GenerateMakeRequestParams = Depends(),
         clip_trainer: CLIPTrainer = Depends(get_clip_trainer),
         ssat: MakeupGAN = Depends(get_ssat_model),
         parser: FaceParser = Depends(get_face_parser)

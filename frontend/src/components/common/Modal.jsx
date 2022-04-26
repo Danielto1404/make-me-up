@@ -1,4 +1,5 @@
 import React, {useEffect, useRef} from 'react'
+import {AiOutlineCloseCircle} from 'react-icons/ai'
 
 const Modal = ({
     close = () => {
@@ -6,7 +7,7 @@ const Modal = ({
     closeOnBgClick = true,
     closeOnEscape = true,
     children,
-    className = "fixed inset-0 z-[150] flex items-center p-4",
+    className = "fixed inset-0 z-[150] flex items-center justify-center p-4",
     style = {
         backgroundColor: `rgba(0, 0, 0, 0.9)`
     },
@@ -41,7 +42,12 @@ const Modal = ({
         className={className}
         style={style}
     >
-        {children}
+        <div className="relative">
+            <button onClick={close}>
+                <AiOutlineCloseCircle className="bg-black fill-white rounded-full absolute top-3 -right-3 w-8 h-8"/>
+            </button>
+            {children}
+        </div>
     </div>)
 }
 

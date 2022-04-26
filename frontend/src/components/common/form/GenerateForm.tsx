@@ -1,17 +1,18 @@
-import React, { useCallback, useState } from 'react'
-import { FormProvider, useForm } from 'react-hook-form'
-import { GenerateFormProps } from '../../../types'
+import React, {useCallback, useState} from 'react'
+import {FormProvider, useForm} from 'react-hook-form'
+import {GenerateFormProps} from '../../../types'
 import PromptsInput from './PromptsInput'
 import UploadUserImage from './UploadUserImage'
-import axios, { AxiosRequestConfig } from 'axios'
+import axios, {AxiosRequestConfig} from 'axios'
 import Modal from '../Modal'
 import Loader from '../Loader'
-import { saveAs } from 'file-saver'
+import {saveAs} from 'file-saver'
 
 const GenerateForm: React.FC = () => {
     const [isUploading, setIsUploading] = useState(false)
     const [generatedSrc, setGeneratedSrc] = useState('')
-    const [visible, setIsVisible] = useState(true)
+    const [error, setError] = useState('')
+    const [visible, setIsVisible] = useState(false)
 
     const methods = useForm<GenerateFormProps>({
         defaultValues: {
@@ -36,17 +37,18 @@ const GenerateForm: React.FC = () => {
             }
 
             setIsUploading(true)
+            setIsVisible(true)
             return axios(request)
         },
         [setIsUploading]
     )
 
     const onSubmit = useCallback(
-        methods.handleSubmit(({ prompts, media }) => {
+        methods.handleSubmit(({prompts, media}) => {
             const file = media.file
 
             if (!file) {
-                methods.setError('media.file', { message: 'Photo is required' })
+                methods.setError('media.file', {message: 'Photo is required'})
                 return
             }
             if (prompts.length === 0) {
@@ -56,9 +58,9 @@ const GenerateForm: React.FC = () => {
             }
 
             upload(file, prompts.map((p) => p.prompt).join('|'))
-                .then((response) => new Blob([response.data]))
-                .then((blob) => setGeneratedSrc(URL.createObjectURL(blob)))
-                .catch((e) => alert(e))
+                .then(response => new Blob([response.data]))
+                .then(blob => setGeneratedSrc(URL.createObjectURL(blob)))
+                .catch(e => setError(e.message))
                 .finally(() => setIsUploading(false))
         }),
         [methods]
@@ -74,8 +76,8 @@ const GenerateForm: React.FC = () => {
                     className="space-y-14 pb-12 px-6"
                     encType="multipart/form-data"
                 >
-                    <PromptsInput />
-                    <UploadUserImage />
+                    <PromptsInput/>
+                    <UploadUserImage/>
                     <button
                         onClick={onSubmit}
                         disabled={
@@ -91,45 +93,51 @@ const GenerateForm: React.FC = () => {
                     </button>
                 </form>
             </FormProvider>
-            {isUploading ||
-                (generatedSrc && visible && (
-                    <Modal close={() => setIsVisible(false)}>
-                        <div className="font-archivo text-white w-full text-center">
-                            {isUploading && (
-                                <>
-                                    <div className="text-2xl">
-                                        Generating makeup...
-                                    </div>
-                                    <div className="text-sm opacity-80 mb-5">
-                                        It usually takes up to 40 seconds
-                                    </div>
-                                    <Loader />
-                                </>
-                            )}
-                            {generatedSrc && (
-                                <div className="flex flex-col justify-center items-center">
-                                    <img src={generatedSrc} />
-                                    <button
-                                        className="mt-5 text-black rounded-xl cursor-pointer bg-sky-200
+            {visible &&
+                <Modal close={() => setIsVisible(false)}>
+                    <div className="font-archivo text-white text-center ring-2 ring-white rounded-2xl">
+                        {isUploading && (
+                            <>
+                                <div className="text-2xl">
+                                    Generating makeup...
+                                </div>
+                                <div className="text-sm opacity-80 mb-5">
+                                    It usually takes up to 40 seconds
+                                </div>
+                                <Loader/>
+                            </>
+                        )}
+                        {error &&
+                            <div className="w-fit px-4">
+                                {error}
+                            </div>
+                        }
+                        {generatedSrc && (
+                            <div className="flex flex-col justify-center items-center p-5">
+                                <img src={generatedSrc}
+                                     alt={prompts.map(p => p.prompt).join(',')}
+                                />
+                                <button
+                                    className="mt-5 text-black rounded-xl cursor-pointer bg-sky-200
                                                hover:bg-green-100
                                                hover:shadow-neon
                                                px-8 py-2 font-semibold text-md"
-                                        onClick={() => {
-                                            saveAs(
-                                                generatedSrc,
-                                                'generated.png'
-                                            )
-                                            methods.resetField('media')
-                                            methods.resetField('prompts')
-                                        }}
-                                    >
-                                        Save photo
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-                    </Modal>
-                ))}
+                                    onClick={() => {
+                                        saveAs(
+                                            generatedSrc,
+                                            'generated.png'
+                                        )
+                                        methods.resetField('media')
+                                        methods.resetField('prompts')
+                                    }}
+                                >
+                                    Save photo
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </Modal>
+            }
         </>
     )
 }

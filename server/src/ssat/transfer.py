@@ -1,17 +1,17 @@
-from pathlib import Path
-
+import numpy as np
 import torch
-import torch.utils.data as torch_data
 
-from .dataset import MakeupDataset
+from .dataset import MakeupTransferData
 from .model import MakeupGAN
 
 
-def transfer(ssat_model: MakeupGAN, root: str = 'images'):
-    print(Path('.').resolve())
-    dataset = MakeupDataset(root)
-    train_loader = torch_data.DataLoader(dataset, batch_size=1, shuffle=False, num_workers=0)
-
-    for data in train_loader:
-        with torch.no_grad():
-            return ssat_model.test_pair(data)
+@torch.no_grad()
+def transfer(
+        ssat_model: MakeupGAN,
+        source: np.ndarray,
+        target: np.ndarray,
+        source_parsing: np.ndarray,
+        target_parsing: np.ndarray
+) -> torch.Tensor:
+    data = MakeupTransferData(source, target, source_parsing, target_parsing).get()
+    return ssat_model.test_pair(data)

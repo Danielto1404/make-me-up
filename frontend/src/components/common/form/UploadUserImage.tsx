@@ -1,5 +1,5 @@
 import React, {memo, useCallback} from 'react';
-import {set, useFormContext} from "react-hook-form";
+import {useFormContext} from "react-hook-form";
 import UploadImage from "./image/UploadImage";
 import {MediaInput} from "../../../types";
 import InputLabel from "./InputLabel";

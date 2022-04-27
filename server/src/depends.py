@@ -6,7 +6,8 @@ import torch
 from config import read_config
 from src.clip import CLIP
 from src.clip_trainer.train import CLIPTrainer
-from src.faceparsing import FaceParser
+from src.face_detector.detector import FaceDetector
+from src.face_parsing import FaceParser
 from src.ssat import MakeupGAN
 
 _face_parser: Optional[FaceParser] = None
@@ -14,6 +15,7 @@ _clip_model: Optional[CLIP] = None
 _gan_model = None
 _ssat_model: Optional[MakeupGAN] = None
 _clip_trainer: Optional[CLIPTrainer] = None
+_face_detector: Optional[FaceDetector] = None
 
 _config = read_config()
 

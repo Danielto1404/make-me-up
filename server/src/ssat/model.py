@@ -93,35 +93,34 @@ class MakeupGAN(nn.Module):
     def normalize_image(x):
         return x[:, 0:3, :, :]
 
-    def test_pair(self, data):
+    @torch.no_grad()
+    def test_pair(self, data) -> torch.Tensor:
         self.non_makeup = data['non_makeup'].to(self.device).detach()
         self.makeup = data['makeup'].to(self.device).detach()
         self.non_makeup_parse = data['non_makeup_parse'].to(self.device).detach()
         self.makeup_parse = data['makeup_parse'].to(self.device).detach()
 
-        with torch.no_grad():
-            # first clip_trainer and removal
-            self.z_non_makeup_c = self.enc_content(self.non_makeup)
-            self.z_non_makeup_s = self.enc_semantic(self.non_makeup_parse)
-            self.z_non_makeup_a = self.enc_makeup(self.non_makeup)
+        self.z_non_makeup_c = self.enc_content(self.non_makeup)
+        self.z_non_makeup_s = self.enc_semantic(self.non_makeup_parse)
+        self.z_non_makeup_a = self.enc_makeup(self.non_makeup)
 
-            self.z_makeup_c = self.enc_content(self.makeup)
-            self.z_makeup_s = self.enc_semantic(self.makeup_parse)
-            self.z_makeup_a = self.enc_makeup(self.makeup)
+        self.z_makeup_c = self.enc_content(self.makeup)
+        self.z_makeup_s = self.enc_semantic(self.makeup_parse)
+        self.z_makeup_a = self.enc_makeup(self.makeup)
 
-            # warp makeup style
-            self.mapX, self.mapY, self.z_non_makeup_a_warp, self.z_makeup_a_warp = self.transformer(
-                self.z_non_makeup_c,
-                self.z_makeup_c,
-                self.z_non_makeup_s,
-                self.z_makeup_s,
-                self.z_non_makeup_a,
-                self.z_makeup_a
-            )
-            # makeup clip_trainer and removal
-            self.z_transfer = self.gen(self.z_non_makeup_c, self.z_makeup_a_warp)
-            self.z_removal = self.gen(self.z_makeup_c, self.z_non_makeup_a_warp)
-            
+        # warp makeup style
+        self.mapX, self.mapY, self.z_non_makeup_a_warp, self.z_makeup_a_warp = self.transformer(
+            self.z_non_makeup_c,
+            self.z_makeup_c,
+            self.z_non_makeup_s,
+            self.z_makeup_s,
+            self.z_non_makeup_a,
+            self.z_makeup_a
+        )
+        # makeup clip_trainer and removal
+        self.z_transfer = self.gen(self.z_non_makeup_c, self.z_makeup_a_warp)
+        self.z_removal = self.gen(self.z_makeup_c, self.z_non_makeup_a_warp)
+
         images_z_transfer = self.normalize_image(self.z_transfer).detach()
 
         return images_z_transfer[0:1, ::]

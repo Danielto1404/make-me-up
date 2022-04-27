@@ -1,9 +1,9 @@
-import cv2
+import numpy as np
 import torch
 import torchvision.transforms as transforms
-from PIL import Image
 
 from .model import BiSeNet
+from ..image_utils import resize_with_aspect
 
 
 class FaceParser:
@@ -36,15 +36,15 @@ class FaceParser:
         return net
 
     @torch.no_grad()
-    def evaluate(self, image: Image, path: str):
-        image = image.resize((512, 512), Image.BILINEAR)
-        img = self.to_tensor(image)
+    def evaluate(self, image: np.ndarray):
+        res = resize_with_aspect(image / 255, size=512)
+        img = self.to_tensor(res).type(torch.FloatTensor)
         img = torch.unsqueeze(img, 0)
         img = img.to(self.device)
         out = self.net(img)[0]
 
         parsing = out.squeeze(0).cpu().numpy().argmax(0)
 
-        cv2.imwrite(path, parsing)
+        return parsing
 
     __call__ = evaluate

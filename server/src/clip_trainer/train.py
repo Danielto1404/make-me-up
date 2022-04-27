@@ -1,6 +1,7 @@
 import os
-from typing import Tuple, List
+from typing import Tuple, List, Optional
 
+import numpy as np
 import torch
 import torchvision.transforms.functional as TF
 from PIL import Image
@@ -77,6 +78,10 @@ class CLIPTrainer:
 
     def _optimize(self, initial, targets, iterations):
 
+        assert iterations > 0, "Amount of iteration must be >= 1"
+
+        pil_image = None
+
         G = self.G
         w_stds = self.w_stds
         cutouts = self.cutouts
@@ -87,7 +92,7 @@ class CLIPTrainer:
         optimizer = torch.optim.AdamW([q], lr=0.05, betas=(0.1, 0.99))
         loop = tqdm(range(iterations), desc='Optimizing latent vector')
 
-        for i in loop:
+        for _ in loop:
             optimizer.zero_grad()
             w = q * self.w_stds
 
@@ -110,10 +115,8 @@ class CLIPTrainer:
 
             image = G.synthesis(q_ema * w_stds + G.mapping.w_avg, noise_mode='const')
             pil_image = TF.to_pil_image(image[0].add(1).div(2).clamp(0, 1))
-            os.makedirs(f'samples/', exist_ok=True)
-            pil_image.save(f'samples/{i}-latent.jpg')
 
-        return q_ema
+        return pil_image
 
     def train(
             self,
@@ -132,17 +135,10 @@ class CLIPTrainer:
             truncation_psi=truncation_psi,
             seed=randint(0, 1_000_000)
         )
-        
+
         torch.cuda.empty_cache()
 
-        latent = self._optimize(initial, targets, iterations=iterations)
-        
+        image = self._optimize(initial, targets, iterations=iterations)
         torch.cuda.empty_cache()
 
-        image = self.G.synthesis(latent * self.w_stds + self.G.mapping.w_avg, noise_mode='const')
-        
-        torch.cuda.empty_cache()
-        
-        pil_image = TF.to_pil_image(image[0].add(1).div(2).clamp(0, 1))
-        
-        return pil_image
+        return image

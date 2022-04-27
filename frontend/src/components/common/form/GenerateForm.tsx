@@ -8,6 +8,8 @@ import Modal from '../Modal'
 import Loader from '../Loader'
 import {saveAs} from 'file-saver'
 
+const frontViewPhoto = require("../../../resources/front-view-photo.jpg")
+
 const GenerateForm: React.FC = () => {
     const [isUploading, setIsUploading] = useState(false)
     const [generatedSrc, setGeneratedSrc] = useState('')
@@ -32,11 +34,12 @@ const GenerateForm: React.FC = () => {
             const request: AxiosRequestConfig = {
                 url: 'http://localhost:8000/api/v1/transfer',
                 method: 'POST',
-                data,
-                responseType: 'arraybuffer',
+                data
             }
 
             setIsUploading(true)
+            setError("")
+            setGeneratedSrc("")
             setIsVisible(true)
             return axios(request)
         },
@@ -58,8 +61,14 @@ const GenerateForm: React.FC = () => {
             }
 
             upload(file, prompts.map((p) => p.prompt).join('|'))
-                .then(response => new Blob([response.data]))
-                .then(blob => setGeneratedSrc(URL.createObjectURL(blob)))
+                .then(response => {
+                    const data = response.data
+                    if (data.status_code !== 200) {
+                        setError(data.detail)
+                    } else {
+                        setGeneratedSrc(`data:image/jpeg;base64,${data.base64_image}`)
+                    }
+                })
                 .catch(e => setError(e.message))
                 .finally(() => setIsUploading(false))
         }),
@@ -73,11 +82,23 @@ const GenerateForm: React.FC = () => {
             <FormProvider {...methods}>
                 <form
                     onSubmit={onSubmit}
-                    className="space-y-14 pb-12 px-6"
                     encType="multipart/form-data"
                 >
-                    <PromptsInput/>
-                    <UploadUserImage/>
+                    <div className="flex flex-row items-end gap-20 justify-between pb-12">
+                        <div className="space-y-14">
+                            <PromptsInput/>
+                            <UploadUserImage/>
+                        </div>
+                        <div className="max-w-[35%] rounded-2xl bg-white p-2">
+                            <div className="font-archivo text-lg text-black text-center font-bold">
+                                Make a front view photo
+                            </div>
+                            <img src={frontViewPhoto}
+                                 alt="front-view"
+                                 className="object-contain"
+                            />
+                        </div>
+                    </div>
                     <button
                         onClick={onSubmit}
                         disabled={
@@ -86,7 +107,14 @@ const GenerateForm: React.FC = () => {
                             prompts.length === 0 ||
                             prompts.filter((p) => !p.prompt).length !== 0
                         }
-                        className="disabled:opacity-50 bg-gradient-to-br from-green-100 to-sky-200
+                        className="disabled:opacity-50
+                                   mb-12
+                                   bg-gradient-to-br
+                                   from-green-100 to-sky-200
+                                   disabled:hover:from-green-100
+                                   disabled:hover:to-sky-200
+                                   hover:from-sky-200
+                                   hover:to-pink-300
                                    rounded-xl px-6 py-3 text-black font-semibold"
                     >
                         Generate
@@ -95,32 +123,39 @@ const GenerateForm: React.FC = () => {
             </FormProvider>
             {visible &&
                 <Modal close={() => setIsVisible(false)}>
-                    <div className="font-archivo text-white text-center ring-2 ring-white rounded-2xl">
+                    <div
+                        className="font-archivo text-black
+                                   text-center ring-2 ring-white rounded-2xl bg-white
+                                   p-5 min-w-[400px] shadow-neon"
+                    >
                         {isUploading && (
                             <>
                                 <div className="text-2xl">
                                     Generating makeup...
                                 </div>
-                                <div className="text-sm opacity-80 mb-5">
-                                    It usually takes up to 40 seconds
+                                <div className="text-sm text-gray-500 mb-5">
+                                    It usually takes up to 20 seconds
                                 </div>
                                 <Loader/>
                             </>
                         )}
                         {error &&
-                            <div className="w-fit px-4">
+                            <div className="w-full px-4 text-lg flex flex-col text-xl items-center gap-6">
                                 {error}
+                                <button className="text-white bg-purple-400 hover:bg-purple-500 rounded-xl px-4 py-2"
+                                        onClick={() => setIsVisible(false)}>
+                                    Try again
+                                </button>
                             </div>
                         }
                         {generatedSrc && (
-                            <div className="flex flex-col justify-center items-center p-5">
+                            <div className="flex flex-col justify-center items-center">
                                 <img src={generatedSrc}
                                      alt={prompts.map(p => p.prompt).join(',')}
                                 />
                                 <button
                                     className="mt-5 text-black rounded-xl cursor-pointer bg-sky-200
-                                               hover:bg-green-100
-                                               hover:shadow-neon
+                                               hover:bg-sky-300
                                                px-8 py-2 font-semibold text-md"
                                     onClick={() => {
                                         saveAs(

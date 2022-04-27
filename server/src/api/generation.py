@@ -1,15 +1,11 @@
-import base64
-import os
-
-import cv2
 import torch
-import torchvision.utils
 from PIL import Image
 from fastapi import APIRouter, UploadFile, Depends, File, Form, HTTPException
 
 from .save_images import resize_source, resize_target
 from .validation import validate_source_face, validate_prompts, PromptsValidationError
-from ..depends import get_ssat_model, get_face_parser
+from ..clip_trainer import CLIPTrainer
+from ..depends import get_ssat_model, get_face_parser, get_clip_trainer
 from ..face_detector import FaceDetectorError
 from ..face_parsing import FaceParser
 from ..image_utils import image_base64_encode
@@ -22,7 +18,7 @@ router = APIRouter(prefix="/transfer")
 async def transfer(
         file: UploadFile = File(...),
         prompts: str = Form(...),
-        # clip_trainer: CLIPTrainer = Depends(get_clip_trainer),
+        clip_trainer: CLIPTrainer = Depends(get_clip_trainer),
         transfer_model: MakeupGAN = Depends(get_ssat_model),
         parser: FaceParser = Depends(get_face_parser)
 ):
@@ -30,15 +26,13 @@ async def transfer(
         source = await validate_source_face(file)
         prompts = validate_prompts(prompts)
 
-        # target = clip_trainer.train(
-        #     prompts=prompts,
-        #     initial_iterations=2,
-        #     iterations=32,
-        #     truncation_psi=0.75,
-        #     batch_size=4
-        # )
-
-        target = Image.open("../../../Downloads/0006.png")
+        target = clip_trainer.train(
+            prompts=prompts,
+            initial_iterations=2,
+            iterations=32,
+            truncation_psi=0.75,
+            batch_size=4
+        )
 
         torch.cuda.empty_cache()
 

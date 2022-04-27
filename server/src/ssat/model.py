@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 from .make_options import MakeOptions
 from .networks import init_net, E_makeup, E_content, E_semantic, Transformer, Decoder

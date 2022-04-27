@@ -37,7 +37,6 @@ class MakeupTransferData:
             resize_size=300,
             crop_size=256
     ):
-
         non_makeup_img = resize_with_aspect(non_makeup_img, resize_size)
         non_makeup_parse = resize_with_aspect(non_makeup_parse, resize_size)
 

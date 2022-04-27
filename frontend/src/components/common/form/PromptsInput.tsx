@@ -18,7 +18,7 @@ const PromptsInput = () => {
     return (
         <div>
             <InputLabel label="Text criteria"
-                        description="You can add text prompt related to make which you want to fit. Maximum 3 criteria."
+                        description="You can add text prompt related to make which you want to fit. Maximum 2 criteria."
             />
             {fields.map((field, index) =>
                 <div key={field.id}
@@ -35,7 +35,7 @@ const PromptsInput = () => {
                     />
                 </div>
             )}
-            {fields.length < 3
+            {fields.length < 2
                 &&
                 <div className="w-[45px] h-[45px]">
                     <PlusButton onClick={() => append({prompt: ""})}/>

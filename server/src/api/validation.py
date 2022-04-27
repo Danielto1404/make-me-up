@@ -2,7 +2,7 @@ import io
 from typing import List
 
 from PIL import Image
-from fastapi import UploadFile, HTTPException
+from fastapi import UploadFile
 
 from src.face_detector import FaceDetector
 

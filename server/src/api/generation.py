@@ -28,9 +28,9 @@ async def transfer(
 
         target = clip_trainer.train(
             prompts=prompts,
-            initial_iterations=2,
+            initial_iterations=16,
             iterations=32,
-            truncation_psi=0.75,
+            truncation_psi=0.8,
             batch_size=4
         )
 

@@ -1,0 +1,2 @@
+### [Frontend](frontend) – **ReactJS** application with client side code for interaction with make-me-up API
+### [Server](server) – backend written on **Python** using FastAPI framework for serving requests.

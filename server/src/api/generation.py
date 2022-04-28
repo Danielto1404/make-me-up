@@ -1,14 +1,12 @@
 import torch
-from PIL import Image
 from fastapi import APIRouter, UploadFile, Depends, File, Form, HTTPException
 
-from .save_images import resize_source, resize_target
 from .validation import validate_source_face, validate_prompts, PromptsValidationError
 from ..clip_trainer import CLIPTrainer
 from ..depends import get_ssat_model, get_face_parser, get_clip_trainer
 from ..face_detector import FaceDetectorError
 from ..face_parsing import FaceParser
-from ..image_utils import image_base64_encode
+from ..image_utils import image_base64_encode, resize_source, resize_target
 from ..ssat import MakeupGAN, transfer as transfer_make
 
 router = APIRouter(prefix="/transfer")

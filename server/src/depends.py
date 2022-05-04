@@ -1,4 +1,3 @@
-import pickle
 from typing import Optional
 
 import torch
@@ -9,10 +8,11 @@ from src.clip_trainer.train import CLIPTrainer
 from src.face_detector.detector import FaceDetector
 from src.face_parsing import FaceParser
 from src.ssat import MakeupGAN
+from src.stylegan import StyleganGenerator
 
 _face_parser: Optional[FaceParser] = None
 _clip_model: Optional[CLIP] = None
-_gan_model = None
+_gan_model: Optional[StyleganGenerator] = None
 _ssat_model: Optional[MakeupGAN] = None
 _clip_trainer: Optional[CLIPTrainer] = None
 _face_detector: Optional[FaceDetector] = None
@@ -46,14 +46,12 @@ def get_clip_model() -> CLIP:
     return _clip_model
 
 
-def get_gan_model() -> torch.nn:
+def get_stylegan_generator() -> torch.nn:
     global _gan_model
 
     if _gan_model is None:
-        with open(_config['models']['stylegan'], 'rb') as fp:
-            print("loading stylegan model...")
-            state = pickle.load(fp)
-            _gan_model = state['G_ema'].to(_config['models']['device'])
+        print("loading stylegan generator..")
+        _gan_model = StyleganGenerator(model_path=_config['models']['stylegan'], device=_config['models']['device'])
 
     return _gan_model
 
@@ -76,7 +74,7 @@ def get_clip_trainer() -> CLIPTrainer:
     if _clip_trainer is None:
         print("loading clip trainer model...")
         _clip_trainer = CLIPTrainer(
-            G=get_gan_model(),
+            generator=get_stylegan_generator(),
             clip_model=get_clip_model(),
             w_stds=torch.load(_config['models']['wstds']).to(_config['models']['device']),
             device=_config['models']['device']

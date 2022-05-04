@@ -1,37 +1,30 @@
-import os
-from typing import Tuple, List, Optional
+from random import randint
+from typing import List
 
-import numpy as np
 import torch
-import torchvision.transforms.functional as TF
+import torchvision.transforms.functional as TransformsFunctional
 from PIL import Image
 from tqdm import tqdm
-from random import randint
 
 from .losses import prompts_dist_loss, spherical_dist_loss
 from .utils import embed_image, MakeCutouts
 from ..clip import CLIP
+from ..stylegan import StyleganGenerator
 
 
 class CLIPTrainer:
-    def __init__(self, G: any, clip_model: CLIP, w_stds: torch.Tensor, device: str):
-        self.G = G
+    def __init__(
+            self,
+            generator: StyleganGenerator,
+            clip_model: CLIP,
+            w_stds: torch.Tensor,
+            device: str
+    ):
+        self.generator = generator
         self.clip_model = clip_model
         self.device = device
         self.cutouts = MakeCutouts(224, 32, 0.5)
         self.w_stds = w_stds
-
-    @staticmethod
-    def _find_weights_std(G: any, device) -> Tuple[torch.nn.Module, torch.Tensor]:
-        """
-        Loads stylegan generator, and find's std weights vector.
-        :return: Std weights
-        """
-        print(f'Finding std weights')
-        zs = torch.randn([5000, G.mapping.z_dim], device=device)
-        w_stds = G.mapping(zs, None).std(0)
-        print(f'Found std weights')
-        return w_stds
 
     def _initial_search(
             self,
@@ -43,7 +36,7 @@ class CLIPTrainer:
     ):
         torch.manual_seed(seed)
 
-        G = self.G
+        generator = self.generator
         w_stds = self.w_stds
         cutouts = self.cutouts
 
@@ -51,12 +44,12 @@ class CLIPTrainer:
         losses = []
 
         for _ in tqdm(range(iterations), desc="Sampling initial vector"):
-            latent = torch.randn([batch_size, G.mapping.z_dim]).to(self.device)
+            latent = torch.randn([batch_size, generator.z_dim]).to(self.device)
             class_ = None
-            latent = G.mapping(latent, class_, truncation_psi=truncation_psi)
-            latent = (latent - G.mapping.w_avg) / w_stds
+            latent = generator.mapping(latent, class_, truncation_psi=truncation_psi)
+            latent = (latent - generator.w_avg) / w_stds
 
-            images = G.synthesis(latent)
+            images = generator.synthesis(latent)
             embeds = embed_image(
                 cutouts=cutouts,
                 clip=self.clip_model,
@@ -82,7 +75,7 @@ class CLIPTrainer:
 
         pil_image = None
 
-        G = self.G
+        G = self.generator
         w_stds = self.w_stds
         cutouts = self.cutouts
 
@@ -96,7 +89,7 @@ class CLIPTrainer:
             optimizer.zero_grad()
             w = q * self.w_stds
 
-            image = G.synthesis(w + G.mapping.w_avg, noise_mode='const')
+            image = G.synthesis(w + G.w_avg, noise_mode='const')
 
             embed = embed_image(
                 cutouts=cutouts,
@@ -113,8 +106,8 @@ class CLIPTrainer:
 
             q_ema = q_ema * 0.95 + q * 0.05
 
-            image = G.synthesis(q_ema * w_stds + G.mapping.w_avg, noise_mode='const')
-            pil_image = TF.to_pil_image(image[0].add(1).div(2).clamp(0, 1))
+            image = G.synthesis(q_ema * w_stds + G.w_avg, noise_mode='const')
+            pil_image = TransformsFunctional.to_pil_image(image[0].add(1).div(2).clamp(0, 1))
 
         return pil_image
 

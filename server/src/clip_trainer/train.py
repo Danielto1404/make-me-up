@@ -44,7 +44,7 @@ class CLIPTrainer:
             latent = self.generator.mapping(latent, truncation_psi=truncation_psi)
             latent = (latent - self.generator.w_avg) / self.w_stds
 
-            images = self.generator.synthesis(latent)
+            images = self.generator.generator.synthesis(latent)
             embeds = embed_image(
                 cutouts=self.cutouts,
                 clip=self.clip_model,
@@ -80,7 +80,8 @@ class CLIPTrainer:
             optimizer.zero_grad()
             w = q * self.w_stds
 
-            image = self.generator.synthesis(w + self.generator.w_avg, noise_mode='const')
+            image = self.generator.generator.synthesis(w + self.generator.w_avg, noise_mode='const')
+            # image = self.generator.synthesis(w + self.generator.w_avg, noise_mode='const')
 
             embed = embed_image(
                 cutouts=self.cutouts,
@@ -97,7 +98,7 @@ class CLIPTrainer:
 
             q_ema = q_ema * 0.95 + q * 0.05
 
-            image = self.generator.synthesis(q_ema * self.w_stds + self.generator.w_avg, noise_mode='const')
+            image = self.generator.generator.synthesis(q_ema * self.w_stds + self.generator.w_avg, noise_mode='const')
             pil_image = TransformsFunctional.to_pil_image(image[0].add(1).div(2).clamp(0, 1))
 
         return pil_image

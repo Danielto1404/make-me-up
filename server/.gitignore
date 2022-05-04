@@ -1,4 +1,10 @@
+# Torch files
 *.pkl
 *.pth
-*.firebase-pk.json
+*.pt
+
+# Python
+.idea
+venv
+
 *.dat

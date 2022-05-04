@@ -67,5 +67,5 @@ def resize_source(img: Image) -> np.ndarray:
 
 def resize_target(img: Image) -> np.ndarray:
     img = resize(img, 512)
-    box = apply_paddings(img, 50)
+    box = apply_paddings(img, 75)
     return box

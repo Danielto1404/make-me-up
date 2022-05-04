@@ -45,8 +45,7 @@ class CLIPTrainer:
 
         for _ in tqdm(range(iterations), desc="Sampling initial vector"):
             latent = torch.randn([batch_size, generator.z_dim]).to(self.device)
-            class_ = None
-            latent = generator.mapping(latent, class_, truncation_psi=truncation_psi)
+            latent = generator.mapping(latent, truncation_psi=truncation_psi)
             latent = (latent - generator.w_avg) / w_stds
 
             images = generator.synthesis(latent)

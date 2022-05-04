@@ -3,12 +3,18 @@ import torch.nn.functional as F
 
 
 def spherical_dist_loss(x, y):
+    """
+    Returns spherical distance loss between two given vectors
+    """
     x = F.normalize(x, dim=-1)
     y = F.normalize(y, dim=-1)
     return (x - y).norm(dim=-1).div(2).arcsin().pow(2).mul(2)
 
 
 def prompts_dist_loss(x, targets, loss):
+    """
+    Returns total loss for given targets
+    """
     # Keeps consistent results vs previous method for single objective guidance
     if len(targets) == 1:
         return loss(x, targets[0])

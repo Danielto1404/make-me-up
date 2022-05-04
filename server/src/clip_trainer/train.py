@@ -76,7 +76,7 @@ class CLIPTrainer:
         optimizer = torch.optim.AdamW([q], lr=0.05, betas=(0.1, 0.99))
         loop = tqdm(range(iterations), desc='Optimizing latent vector')
 
-        for _ in loop:
+        for i in loop:
             optimizer.zero_grad()
             w = q * self.w_stds
 
@@ -100,6 +100,7 @@ class CLIPTrainer:
 
             image = self.generator.generator.synthesis(q_ema * self.w_stds + self.generator.w_avg, noise_mode='const')
             pil_image = TransformsFunctional.to_pil_image(image[0].add(1).div(2).clamp(0, 1))
+            pil_image.save(f'./samples/{i}.png')
 
         return pil_image
 

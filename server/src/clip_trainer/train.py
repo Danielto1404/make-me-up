@@ -23,7 +23,7 @@ class CLIPTrainer:
         self.generator = generator
         self.clip_model = clip_model
         self.device = device
-        self.cutouts = MakeCutouts(224, 32, 0.5)
+        self.cutouts = MakeCutouts(224, 32, 0.5).to(device)
         self.w_stds = w_stds
 
     def _initial_search(
@@ -36,21 +36,17 @@ class CLIPTrainer:
     ):
         torch.manual_seed(seed)
 
-        generator = self.generator
-        w_stds = self.w_stds
-        cutouts = self.cutouts
-
         qs = []
         losses = []
 
         for _ in tqdm(range(iterations), desc="Sampling initial vector"):
-            latent = torch.randn([batch_size, generator.z_dim]).to(self.device)
-            latent = generator.mapping(latent, truncation_psi=truncation_psi)
-            latent = (latent - generator.w_avg) / w_stds
+            latent = torch.randn([batch_size, self.generator.z_dim]).to(self.device)
+            latent = self.generator.mapping(latent, truncation_psi=truncation_psi)
+            latent = (latent - self.generator.w_avg) / self.w_stds
 
-            images = generator.synthesis(latent)
+            images = self.generator.synthesis(latent)
             embeds = embed_image(
-                cutouts=cutouts,
+                cutouts=self.cutouts,
                 clip=self.clip_model,
                 image=images.add(1).div(2)
             )
@@ -74,10 +70,6 @@ class CLIPTrainer:
 
         pil_image = None
 
-        G = self.generator
-        w_stds = self.w_stds
-        cutouts = self.cutouts
-
         q = initial
         q_ema = q
 
@@ -88,10 +80,10 @@ class CLIPTrainer:
             optimizer.zero_grad()
             w = q * self.w_stds
 
-            image = G.synthesis(w + G.w_avg, noise_mode='const')
+            image = self.generator.synthesis(w + self.generator.w_avg, noise_mode='const')
 
             embed = embed_image(
-                cutouts=cutouts,
+                cutouts=self.cutouts,
                 clip=self.clip_model,
                 image=image.add(1).div(2)
             )
@@ -105,7 +97,7 @@ class CLIPTrainer:
 
             q_ema = q_ema * 0.95 + q * 0.05
 
-            image = G.synthesis(q_ema * w_stds + G.w_avg, noise_mode='const')
+            image = self.generator.synthesis(q_ema * self.w_stds + self.generator.w_avg, noise_mode='const')
             pil_image = TransformsFunctional.to_pil_image(image[0].add(1).div(2).clamp(0, 1))
 
         return pil_image

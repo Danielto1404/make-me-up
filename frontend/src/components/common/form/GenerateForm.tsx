@@ -3,10 +3,11 @@ import {FormProvider, useForm} from 'react-hook-form'
 import {GenerateFormProps} from '../../../types'
 import PromptsInput from './PromptsInput'
 import UploadUserImage from './UploadUserImage'
-import axios, {AxiosRequestConfig} from 'axios'
+import axios from 'axios'
 import Modal from '../Modal'
 import Loader from '../Loader'
 import {saveAs} from 'file-saver'
+import Toggle from "./Toggle";
 
 const frontViewPhoto = require("../../../resources/front-view-photo.jpg")
 
@@ -15,6 +16,7 @@ const GenerateForm: React.FC = () => {
     const [generatedSrc, setGeneratedSrc] = useState('')
     const [error, setError] = useState('')
     const [visible, setIsVisible] = useState(false)
+    const [isRandom, setIsRandom] = useState(false)
 
     const methods = useForm<GenerateFormProps>({
         defaultValues: {
@@ -27,21 +29,24 @@ const GenerateForm: React.FC = () => {
 
     const upload = useCallback(
         (file: File, prompts: string) => {
+
             const data = new FormData()
             data.append('file', file)
-            data.append('prompts', prompts)
 
-            const request: AxiosRequestConfig = {
-                url: 'http://localhost:8000/api/v1/transfer',
-                method: 'POST',
-                data
+            if (prompts) {
+                data.append('prompts', prompts)
+                setIsUploading(true)
+                setError("")
+                setGeneratedSrc("")
+                setIsVisible(true)
+                return axios.post("http://localhost:8000/api/v1/transfer", data)
+            } else {
+                setIsUploading(true)
+                setError("")
+                setGeneratedSrc("")
+                setIsVisible(true)
+                return axios.post("http://localhost:8000/api/v1/transfer/random", data)
             }
-
-            setIsUploading(true)
-            setError("")
-            setGeneratedSrc("")
-            setIsVisible(true)
-            return axios(request)
         },
         [setIsUploading]
     )
@@ -54,7 +59,7 @@ const GenerateForm: React.FC = () => {
                 methods.setError('media.file', {message: 'Photo is required'})
                 return
             }
-            if (prompts.length === 0) {
+            if (prompts.length === 0 && !isRandom) {
                 methods.setError('prompts.0.prompt', {
                     message: 'At least one criteria must be filled',
                 })
@@ -72,7 +77,7 @@ const GenerateForm: React.FC = () => {
                 .catch(e => setError(e.message))
                 .finally(() => setIsUploading(false))
         }),
-        [methods]
+        [methods, isRandom]
     )
 
     const [url, prompts] = methods.watch(['media.url', 'prompts'])
@@ -84,9 +89,13 @@ const GenerateForm: React.FC = () => {
                     onSubmit={onSubmit}
                     encType="multipart/form-data"
                 >
-                    <div className="flex flex-row items-end gap-20 justify-between pb-12">
+                    <div className="flex flex-row items-start gap-20 justify-between pb-12">
                         <div className="space-y-14">
-                            <PromptsInput/>
+                            <Toggle text="Generate random makeup style"
+                                    handleToggle={setIsRandom}
+                                    defaultChecked={isRandom}
+                            />
+                            {!isRandom && <PromptsInput/>}
                             <UploadUserImage/>
                         </div>
                         <div className="max-w-[35%] rounded-2xl bg-white p-2">
@@ -104,7 +113,7 @@ const GenerateForm: React.FC = () => {
                         disabled={
                             !methods.formState.isValid ||
                             !url ||
-                            prompts.length === 0 ||
+                            (prompts.length === 0 && !isRandom) ||
                             prompts.filter((p) => !p.prompt).length !== 0
                         }
                         className="disabled:opacity-50

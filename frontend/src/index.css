@@ -110,3 +110,13 @@
         transform: rotate(360deg);
     }
 }
+
+
+input:checked ~ .checkedBackground {
+    background: #11a5da;
+}
+
+input:checked ~ .dotCheckbox {
+    transform: translateX(28px);
+    background-color: white;
+}

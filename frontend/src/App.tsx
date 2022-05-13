@@ -5,7 +5,6 @@ import GenerateMakePage from "./pages/GenerateMakePage";
 import NotFound404 from "./pages/NotFound404";
 import ProfilePage from "./pages/ProfilePage";
 
-
 function App() {
     return (
         <BrowserRouter>

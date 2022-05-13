@@ -3,11 +3,13 @@ from typing import Optional
 
 import torch
 import torch.nn as nn
+from PIL import Image
 
 
 class StyleganGenerator(nn.Module):
     def __init__(self, model_path: str, device: str):
         super().__init__()
+        self.device = device
         self.generator = StyleganGenerator.load_weights(model_path, device)
 
     @staticmethod
@@ -48,3 +50,11 @@ class StyleganGenerator(nn.Module):
         Returns dimension of latent vector
         """
         return self.generator.mapping.z_dim
+
+    def gen_image(self) -> Image:
+        print('generating random image...')
+        latent = 2 * torch.randn([1, self.z_dim]).to(self.device)
+        label = None
+        image = self.generator(latent, label, truncation_psi=1, noise_mode='const')
+        image = (image.permute(0, 2, 3, 1) * 127.5 + 128).clamp(0, 255).to(torch.uint8).cpu().numpy()[0]
+        return Image.fromarray(image, 'RGB')

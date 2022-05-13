@@ -81,7 +81,6 @@ class CLIPTrainer:
             w = q * self.w_stds
 
             image = self.generator.generator.synthesis(w + self.generator.w_avg, noise_mode='const')
-            # image = self.generator.synthesis(w + self.generator.w_avg, noise_mode='const')
 
             embed = embed_image(
                 cutouts=self.cutouts,

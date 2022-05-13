@@ -3,11 +3,12 @@ from fastapi import APIRouter, UploadFile, Depends, File, Form, HTTPException
 
 from .validation import validate_source_face, validate_prompts, PromptsValidationError
 from ..clip_trainer import CLIPTrainer
-from ..depends import get_ssat_model, get_face_parser, get_clip_trainer
+from ..depends import get_ssat_model, get_face_parser, get_clip_trainer, get_stylegan_generator
 from ..face_detector import FaceDetectorError
 from ..face_parsing import FaceParser
-from ..image_utils import image_base64_encode, resize_source, resize_target
+from ..image_utils import image_base64_encode
 from ..ssat import MakeupGAN, transfer as transfer_make
+from ..stylegan import StyleganGenerator
 
 router = APIRouter(prefix="/transfer")
 
@@ -34,13 +35,7 @@ async def transfer(
 
         torch.cuda.empty_cache()
 
-        target = resize_target(target)
-        source = resize_source(source)
-        target_parsing = parser(target)
-        source_parsing = parser(source)
-
-        result = transfer_make(transfer_model, source, target, source_parsing, target_parsing).cpu().squeeze(0)
-        result = result / 2 + 0.5
+        result = transfer_make(transfer_model, parser, source, target)
 
         return {
             "status_code": 200,
@@ -52,6 +47,31 @@ async def transfer(
         return HTTPException(status_code=422, detail=str(e))
 
     except PromptsValidationError as e:
+        print(e)
+        return HTTPException(status_code=422, detail=str(e))
+
+    except Exception as e:
+        return HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/random")
+async def transfer(
+        file: UploadFile = File(...),
+        generator: StyleganGenerator = Depends(get_stylegan_generator),
+        transfer_model: MakeupGAN = Depends(get_ssat_model),
+        parser: FaceParser = Depends(get_face_parser)
+):
+    try:
+        source = await validate_source_face(file)
+        target = generator.gen_image()
+        result = transfer_make(transfer_model, parser, source, target)
+
+        return {
+            "status_code": 200,
+            "base64_image": image_base64_encode(result)
+        }
+
+    except FaceDetectorError as e:
         print(e)
         return HTTPException(status_code=422, detail=str(e))
 

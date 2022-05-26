@@ -12,7 +12,7 @@
 
 ### Running application:
 
-Download models weights from [here](https://drive.google.com/drive/folders/1SkxAHTa9XMiK328J1G_ejjEbFpPS4nWX?usp=sharing) and then put them into [server/models](server/models) folder.
+Download models weights from [here]([https://drive.google.com/drive/folders/1SkxAHTa9XMiK328J1G_ejjEbFpPS4nWX?usp=sharing](https://drive.google.com/drive/folders/1SkxAHTa9XMiK328J1G_ejjEbFpPS4nWX?usp=sharing)) and then put them into [server/models](server/models) folder.
 
 ```yaml
     server:
